@@ -351,6 +351,8 @@ void scheduler_sigchld(int signum) {
     // Paso 1. Loop while waitpid(-1, &status, WNOHANG | WUNTRACED) > 0:
     //         - WNOHANG para no bloquear.
     //         - El loop recoge todos los hijos terminados pendientes.
+    pid_t pid;
+    int status;
     while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0) {
 
         // Paso 2. Dentro del loop, IGNORAR paradas: si !WIFEXITED(status) y
