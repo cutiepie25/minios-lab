@@ -229,22 +229,31 @@ int scheduler_create_process(const char *path, const char *arg) {
 void scheduler_start(int slice_ms) {
     // Paso 1. Si rq_is_empty(), imprimir "No hay procesos en la ready queue."
     //         y retornar.
-
+    if (rq_is_empty()) {
+        printf("No hay procesos en la ready queue.\n");
+        return;
+    }
     // Paso 2. Desencolar el primer índice con rq_dequeue().
+    int idx = rq_dequeue();
 
     // Paso 3. Actualizar PCB del proceso entrante:
     //         - process_table[idx].state = PROC_RUNNING;
     //         - clock_gettime(CLOCK_MONOTONIC, &process_table[idx].last_started);
     //         - current_running = idx;
+    process_table[idx].state = PROC_RUNNING;
+    clock_gettime(CLOCK_MONOTONIC, &process_table[idx].last_started);
+    current_running = idx;
 
     // Paso 4. Reanudar el proceso con platform_resume_process(process_table[idx].pid).
+    platform_resume_process(process_table[idx].pid);
 
     // Paso 5. Activar el scheduler y arrancar el timer:
     //         - scheduler_active = 1;
     //         - timer_init(slice_ms, scheduler_tick);  // registra el handler
     //         - timer_start();                         // arranca setitimer
-
-    (void)slice_ms;  // silence unused while unimplemented
+    scheduler_active = 1;
+    timer_init(slice_ms, scheduler_tick);
+    timer_start();
 }
 
 
